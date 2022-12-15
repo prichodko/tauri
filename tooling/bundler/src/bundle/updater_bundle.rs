@@ -139,6 +139,10 @@ fn bundle_update_windows(settings: &Settings, bundles: &[Bundle]) -> crate::Resu
   #[cfg(target_os = "windows")]
   use crate::bundle::windows::msi;
   use crate::bundle::windows::nsis;
+  use crate::bundle::windows::util::{
+    NSIS_OUTPUT_FOLDER_NAME, NSIS_UPDATER_OUTPUT_FOLDER_NAME, WIX_OUTPUT_FOLDER_NAME,
+    WIX_UPDATER_OUTPUT_FOLDER_NAME,
+  };
   use crate::PackageType;
 
   // find our installers or rebuild
@@ -190,13 +194,13 @@ fn bundle_update_windows(settings: &Settings, bundles: &[Bundle]) -> crate::Resu
           if let std::path::Component::Normal(name) = c {
             if let Some(name) = name.to_str() {
               // installers bundled for updater should be put in a directory named `${bundle_name}-updater`
-              if matches!(name, "msi-updater" | "nsis-updater") {
+              if name == WIX_UPDATER_OUTPUT_FOLDER_NAME || name == NSIS_UPDATER_OUTPUT_FOLDER_NAME {
                 b = name.strip_suffix("-updater").unwrap().to_string();
                 p.push(&b);
                 return (p, b);
               }
 
-              if matches!(name, "msi" | "nsis") {
+              if name == WIX_OUTPUT_FOLDER_NAME || name == NSIS_OUTPUT_FOLDER_NAME {
                 b = name.to_string();
               }
             }

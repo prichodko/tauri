@@ -9,4 +9,4 @@ pub mod nsis;
 #[cfg(target_os = "windows")]
 pub mod sign;
 
-mod util;
+pub mod util;

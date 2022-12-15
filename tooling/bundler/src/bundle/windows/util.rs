@@ -1,3 +1,7 @@
+// Copyright 2019-2022 Tauri Programme within The Commons Conservancy
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+
 use std::{
   fs::{create_dir_all, File},
   io::{Cursor, Read, Write},
@@ -19,6 +23,12 @@ pub const WEBVIEW2_BOOTSTRAPPER_URL: &str = "https://go.microsoft.com/fwlink/p/?
 pub const WEBVIEW2_X86_INSTALLER_GUID: &str = "a17bde80-b5ab-47b5-8bbb-1cbe93fc6ec9";
 pub const WEBVIEW2_X64_INSTALLER_GUID: &str = "aa5fd9b3-dc11-4cbc-8343-a50f57b311e1";
 
+pub const NSIS_OUTPUT_FOLDER_NAME: &str = "nsis";
+pub const NSIS_UPDATER_OUTPUT_FOLDER_NAME: &str = "nsis-updater";
+
+pub const WIX_OUTPUT_FOLDER_NAME: &str = "msi";
+pub const WIX_UPDATER_OUTPUT_FOLDER_NAME: &str = "msi-updater";
+
 pub fn download(url: &str) -> crate::Result<Vec<u8>> {
   info!(action = "Downloading"; "{}", url);
   let response = attohttpc::get(url).send()?;
@@ -26,22 +36,30 @@ pub fn download(url: &str) -> crate::Result<Vec<u8>> {
 }
 
 #[cfg(target_os = "windows")]
+pub enum HashAlgorithm {
+  Sha256,
+  Sha1,
+}
+
+#[cfg(target_os = "windows")]
 /// Function used to download a file and checks SHA256 to verify the download.
-pub fn download_and_verify(url: &str, hash: &str, hash_algorithim: &str) -> crate::Result<Vec<u8>> {
+pub fn download_and_verify(
+  url: &str,
+  hash: &str,
+  hash_algorithim: HashAlgorithm,
+) -> crate::Result<Vec<u8>> {
   let data = download(url)?;
   info!("validating hash");
 
   match hash_algorithim {
-    "sha256" => {
+    HashAlgorithm::Sha256 => {
       let hasher = sha2::Sha256::new();
       verify(&data, hash, hasher)?;
     }
-    "sha1" => {
+    HashAlgorithm::Sha1 => {
       let hasher = sha1::Sha1::new();
       verify(&data, hash, hasher)?;
     }
-    // "sha256" => sha1::Sha1::new(),
-    _ => unimplemented!(),
   }
 
   Ok(data)

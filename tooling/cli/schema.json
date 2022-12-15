@@ -169,7 +169,8 @@
           "dialog": true,
           "pubkey": "",
           "windows": {
-            "installMode": "passive"
+            "installMode": "passive",
+            "installerArgs": []
           }
         },
         "windows": []
@@ -427,7 +428,8 @@
             "dialog": true,
             "pubkey": "",
             "windows": {
-              "installMode": "passive"
+              "installMode": "passive",
+              "installerArgs": []
             }
           },
           "allOf": [
@@ -1651,14 +1653,14 @@
           ]
         },
         "headerImage": {
-          "description": "The path to a bitmap file to display on the header of installers pages.\n\nThe recommended dimensions are 150pxx57px.",
+          "description": "The path to a bitmap file to display on the header of installers pages.\n\nThe recommended dimensions are 150px x 57px.",
           "type": [
             "string",
             "null"
           ]
         },
         "sidebarImage": {
-          "description": "The path to a bitmap file for the Welcome page and the Finish page.\n\nThe recommended dimensions are 164pxx314px.",
+          "description": "The path to a bitmap file for the Welcome page and the Finish page.\n\nThe recommended dimensions are 164px x 314px.",
           "type": [
             "string",
             "null"
@@ -2620,7 +2622,8 @@
         "windows": {
           "description": "The Windows configuration for the updater.",
           "default": {
-            "installMode": "passive"
+            "installMode": "passive",
+            "installerArgs": []
           },
           "allOf": [
             {
@@ -2640,6 +2643,14 @@
       "description": "The updater configuration for Windows.",
       "type": "object",
       "properties": {
+        "installerArgs": {
+          "description": "Additional arguments given to the NSIS or WiX installer.",
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "installMode": {
           "description": "The installation mode for the update on Windows. Defaults to `passive`.",
           "default": "passive",
@@ -2663,7 +2674,7 @@
           ]
         },
         {
-          "description": "The quiet mode means there's no user interaction required. Requires admin privileges if the installer does.",
+          "description": "The quiet mode means there's no user interaction required. Requires admin privileges if the installer does (WiX).",
           "type": "string",
           "enum": [
             "quiet"
