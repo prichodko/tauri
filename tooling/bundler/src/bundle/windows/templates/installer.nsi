@@ -24,6 +24,7 @@
 !define BUNDLEID "{{{bundle_id}}}"
 !define OUTFILE "{{{out_file}}}"
 !define ARCH "{{{arch}}}"
+!define PLUGINSPATH "{{{additional_plugins_path}}}"
 !define ALLOWDOWNGRADES "{{{allow_downgrades}}}"
 !define INSTALLWEBVIEW2MODE "{{{install_webview2_mode}}}"
 !define WEBVIEW2INSTALLERARGS "{{{webview2_installer_args}}}"
@@ -44,6 +45,9 @@ Name "${PRODUCTNAME}"
 OutFile "${OUTFILE}"
 Unicode true
 SetCompressor /SOLID lzma
+!if "${PLUGINSPATH}" != ""
+    !addplugindir "${PLUGINSPATH}"
+!endif
 
 !if "${INSTALLMODE}" == "perMachine"
   RequestExecutionLevel heighest
