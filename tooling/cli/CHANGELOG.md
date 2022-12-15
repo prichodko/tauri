@@ -1,5 +1,10 @@
 # Changelog
 
+## \[1.3.0]
+
+- Add support for Cargo's workspace inheritance for the package version.
+  - [cd8c074a](https://www.github.com/tauri-apps/tauri/commit/cd8c074ae6592303d3f6844a4fb6d262eae913b2) feat(cli): add support for Cargo's workspace inheritance for the package version, closes [#5070](https://www.github.com/tauri-apps/tauri/pull/5070) ([#5775](https://www.github.com/tauri-apps/tauri/pull/5775)) on 2022-12-14
+
 ## \[1.2.2]
 
 - Detect SvelteKit and Vite for the init and info commands.
