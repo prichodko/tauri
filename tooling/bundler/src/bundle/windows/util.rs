@@ -8,9 +8,9 @@ use std::{
   path::{Path, PathBuf},
 };
 
+#[cfg(target_os = "windows")]
 use anyhow::{bail, Context};
 use log::info;
-#[cfg(target_os = "windows")]
 use sha2::Digest;
 use zip::ZipArchive;
 
@@ -35,13 +35,12 @@ pub fn download(url: &str) -> crate::Result<Vec<u8>> {
   response.bytes().map_err(Into::into)
 }
 
-#[cfg(target_os = "windows")]
 pub enum HashAlgorithm {
+  #[cfg(target_os = "windows")]
   Sha256,
   Sha1,
 }
 
-#[cfg(target_os = "windows")]
 /// Function used to download a file and checks SHA256 to verify the download.
 pub fn download_and_verify(
   url: &str,
@@ -52,6 +51,7 @@ pub fn download_and_verify(
   info!("validating hash");
 
   match hash_algorithim {
+    #[cfg(target_os = "windows")]
     HashAlgorithm::Sha256 => {
       let hasher = sha2::Sha256::new();
       verify(&data, hash, hasher)?;
@@ -65,7 +65,6 @@ pub fn download_and_verify(
   Ok(data)
 }
 
-#[cfg(target_os = "windows")]
 fn verify(data: &Vec<u8>, hash: &str, mut hasher: impl Digest) -> crate::Result<()> {
   hasher.update(data);
 
@@ -78,6 +77,7 @@ fn verify(data: &Vec<u8>, hash: &str, mut hasher: impl Digest) -> crate::Result<
   }
 }
 
+#[cfg(target_os = "windows")]
 pub fn validate_version(version: &str) -> anyhow::Result<()> {
   let version = semver::Version::parse(version).context("invalid app version")?;
   if version.major > 255 {

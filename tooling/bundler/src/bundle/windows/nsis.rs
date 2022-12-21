@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: MIT
 
 #[cfg(target_os = "windows")]
-use crate::bundle::windows::util::{download_and_verify, try_sign, HashAlgorithm};
+use crate::bundle::windows::util::try_sign;
 use crate::{
   bundle::{
     common::CommandExt,
     windows::util::{
-      download, extract_zip, remove_unc_lossy, validate_version, NSIS_OUTPUT_FOLDER_NAME,
-      NSIS_UPDATER_OUTPUT_FOLDER_NAME, WEBVIEW2_BOOTSTRAPPER_URL, WEBVIEW2_X64_INSTALLER_GUID,
-      WEBVIEW2_X86_INSTALLER_GUID,
+      download, download_and_verify, extract_zip, remove_unc_lossy, HashAlgorithm,
+      NSIS_OUTPUT_FOLDER_NAME, NSIS_UPDATER_OUTPUT_FOLDER_NAME, WEBVIEW2_BOOTSTRAPPER_URL,
+      WEBVIEW2_X64_INSTALLER_GUID, WEBVIEW2_X86_INSTALLER_GUID,
     },
   },
   Settings,
@@ -39,6 +39,9 @@ const NSIS_NSCURL_URL: &str =
 const NSIS_APPLICATIONID_URL: &str = "https://github.com/tauri-apps/binary-releases/releases/download/nsis-plugins-v0/NSIS-ApplicationID.zip";
 const NSIS_NSPROCESS_URL: &str =
   "https://github.com/tauri-apps/binary-releases/releases/download/nsis-plugins-v0/NsProcess.zip";
+const NSIS_SEMVER_COMPARE: &str =
+  "https://github.com/tauri-apps/NSIS-SemverCompare/releases/download/v0.1.1/SemverCompare.dll";
+const NSIS_SEMVER_COMPARE_SHA1: &str = "B5619EAA0279DE40BCCC61D7EB9A0869D0EAE006";
 
 #[cfg(target_os = "windows")]
 const NSIS_REQUIRED_FILES: &[&str] = &[
@@ -49,6 +52,7 @@ const NSIS_REQUIRED_FILES: &[&str] = &[
   "Plugins/x86-unicode/NScurl.dll",
   "Plugins/x86-unicode/ApplicationID.dll",
   "Plugins/x86-unicode/nsProcess.dll",
+  "Plugins/x86-unicode/SemverCompare.dll",
   "Include/MUI2.nsh",
   "Include/FileFunc.nsh",
   "Include/x64.nsh",
@@ -58,6 +62,7 @@ const NSIS_REQUIRED_FILES: &[&str] = &[
   "Plugins/x86-unicode/NScurl.dll",
   "Plugins/x86-unicode/ApplicationID.dll",
   "Plugins/x86-unicode/nsProcess.dll",
+  "Plugins/x86-unicode/SemverCompare.dll",
 ];
 
 /// Runs all of the commands to build the NSIS installer.
@@ -115,6 +120,17 @@ fn get_and_extract_nsis(nsis_toolset_path: &Path, _tauri_tools_path: &Path) -> c
     nsis_plugins.join("Plugin").join("nsProcessW.dll"),
     nsis_plugins.join("x86-unicode").join("nsProcess.dll"),
   )?;
+
+  let data = download_and_verify(
+    NSIS_SEMVER_COMPARE,
+    NSIS_SEMVER_COMPARE_SHA1,
+    HashAlgorithm::Sha1,
+  )?;
+  write(
+    nsis_plugins.join("x86-unicode").join("SemverCompare.dll"),
+    data,
+  )?;
+
   Ok(())
 }
 
@@ -134,8 +150,6 @@ fn build_nsis_app_installer(
       )))
     }
   };
-
-  validate_version(settings.version_string())?;
 
   info!("Target: {}", arch);
 
@@ -178,11 +192,6 @@ fn build_nsis_app_installer(
 
   let version = settings.version_string();
   data.insert("version", to_json(version));
-
-  let mut s = version.split('.');
-  data.insert("version_major", to_json(s.next().unwrap()));
-  data.insert("version_minor", to_json(s.next().unwrap()));
-  data.insert("version_build", to_json(s.next().unwrap()));
 
   data.insert(
     "allow_downgrades",

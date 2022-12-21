@@ -11,9 +11,6 @@
 !define MANUFACTURER "{{{manufacturer}}}"
 !define PRODUCTNAME "{{{product_name}}}"
 !define VERSION "{{{version}}}"
-!define VERSIONMAJOR "{{{version_major}}}"
-!define VERSIONMINOR "{{{version_minor}}}"
-!define VERSIONBUILD "{{{version_build}}}"
 !define INSTALLMODE "{{{installer_mode}}}"
 !define LICENSE "{{{license}}}"
 !define INSTALLERICON "{{{installer_icon}}}"
@@ -264,13 +261,10 @@ Section Install
   ; Registry information for add/remove programs
   WriteRegStr SHCTX "${APR}" "DisplayName" "${PRODUCTNAME}"
   WriteRegStr SHCTX "${APR}" "DisplayIcon" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\""
-  WriteRegStr SHCTX "${APR}" "DisplayVersion" "$\"${VERSION}$\""
+  WriteRegStr SHCTX "${APR}" "DisplayVersion" "${VERSION}"
   WriteRegStr SHCTX "${APR}" "Publisher" "${MANUFACTURER}"
   WriteRegStr SHCTX "${APR}" "InstallLocation" "$\"$INSTDIR$\""
   WriteRegStr SHCTX "${APR}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-  WriteRegDWORD SHCTX "${APR}" "VersionMajor" ${VERSIONMAJOR}
-  WriteRegDWORD SHCTX "${APR}" "VersionMinor" ${VERSIONMINOR}
-  WriteRegDWORD SHCTX "${APR}" "VersionBuild" ${VERSIONBUILD}
   WriteRegDWORD SHCTX "${APR}" "NoModify" "1"
   WriteRegDWORD SHCTX "${APR}" "NoRepair" "1"
   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
@@ -321,7 +315,8 @@ Function PageReinstall
   ReadRegStr $R0 SHCTX "${APR}" "DisplayVersion"
   ${IfThen} $R0 == "" ${|} StrCpy $R4 "unknown" ${|}
 
-  ${VersionCompare} "$\"${VERSION}$\"" $R0 $R0
+  SemverCompare::SemverCompare "${VERSION}" $R0
+  Pop $R0
   ; Reinstalling the same version
   ${If} $R0 == 0
     StrCpy $R1 "${PRODUCTNAME} ${VERSION} is already installed. Select the operation you want to perform and click Next to continue."
@@ -337,7 +332,7 @@ Function PageReinstall
     !insertmacro MUI_HEADER_TEXT "Already Installed" "Choose how you want to install ${PRODUCTNAME}."
     StrCpy $R0 "1"
   ; Downgrading
-  ${ElseIf} $R0 == 2
+  ${ElseIf} $R0 == -1
     StrCpy $R1 "A newer version of ${PRODUCTNAME} is already installed! It is not recommended that you install an older version. If you really want to install this older version, it's better to uninstall the current version first. Select the operation you want to perform and click Next to continue."
     StrCpy $R2 "Uninstall before installing"
     !if "${ALLOWDOWNGRADES}" == "true"
@@ -396,7 +391,7 @@ FunctionEnd
 Function PageLeaveReinstall
   ${NSD_GetState} $R2 $R1
 
-  ; $R0 holds whether we are reinstallign the same version or not
+  ; $R0 holds whether we are reinstalling the same version or not
   ; $R0 == "1" -> different versions
   ; $R0 == "2" -> same version
   ;
