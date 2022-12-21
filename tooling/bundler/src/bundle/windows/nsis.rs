@@ -386,7 +386,7 @@ fn build_nsis_app_installer(
     .output_ok()
     .context("error running makensis.exe")?;
 
-  rename(&nsis_output_path, &nsis_installer_path)?;
+  rename(nsis_output_path, &nsis_installer_path)?;
 
   // Code signing is currently only supported on Windows hosts
   #[cfg(target_os = "windows")]
